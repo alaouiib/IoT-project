@@ -7,7 +7,7 @@ import "buefy/dist/buefy.css";
 
 Vue.use(Buefy, {
   defaultIconPack: "fas",
-  defaultContainerElement: "#content"
+  // defaultContainerElement: "#content"
   // ...
 });
 Vue.config.productionTip = false;

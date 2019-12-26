@@ -9,10 +9,17 @@
 </div> -->
     <section class="section">
       <div class="container" ref="element">
-        <div class="card" v-for="(room, i) in rooms" :key="i">
+        <div
+          @mouseover="mouseOver('on', $event)"
+          @mouseleave="mouseOver('off', $event)"
+          class="card"
+          v-for="(room, i) in rooms"
+          :key="i"
+        >
           <header class="card-header">
             <p class="card-header-title">{{ room.name }}</p>
             <a
+              style="visibility:hidden;"
               @click="removeRoom(room.id, i)"
               class="card-header-icon"
               aria-label="delete"
@@ -93,7 +100,11 @@
             </b-field>
 
             <b-field label="floor" label-position="on-border">
-              <b-input placeholder="floor number" type='number' v-model="floor"></b-input>
+              <b-input
+                placeholder="floor number"
+                type="number"
+                v-model="floor"
+              ></b-input>
             </b-field>
             <b-field>
               <b-button @click="addRoom" type="submit">Add</b-button>
@@ -116,7 +127,8 @@ export default {
       roomName: "",
       roomId: "",
       floor: "",
-      isAddBoxHidden: false
+      isAddBoxHidden: false,
+      ErrorMessage: "Please refresh the page, Something happened uncorrectly! "
     };
   },
   methods: {
@@ -139,6 +151,9 @@ export default {
       };
 
       try {
+        const loadingComponent = this.$buefy.loading.open({
+          container: this.$refs.element.$el
+        });
         let resp = await fetch(`${this.API_URL}/rooms`, {
           method: "POST",
           body: JSON.stringify(body),
@@ -146,11 +161,27 @@ export default {
           mode: "cors",
           credentials: "omit"
         });
-        let data = await resp.json();
-        body.id = data.id;
-        this.rooms.push(body);
-        console.log(data);
+        loadingComponent.close()
+        if (resp.status == 200 || resp.status == 201) {
+          let data = await resp.json();
+          body.id = data.id;
+          this.rooms.push(body);
+          console.log(data);
+          this.$buefy.snackbar.open({
+            message: "Room Added successfully !",
+            type: "is-success",
+            position: "is-bottom-left",
+            // actionText: 'Retry',
+            duration: 4000
+          });
+        } else {
+          throw Error;
+        }
       } catch (error) {
+        this.$buefy.toast.open({
+          message: this.ErrorMessage,
+          type: "is-danger"
+        });
         console.log(error);
       }
     },
@@ -159,29 +190,67 @@ export default {
         const loadingComponent = this.$buefy.loading.open({
           container: this.$refs.element.$el
         });
-        await fetch(`${this.API_URL}/rooms/${roomId}`, {
+        let res = await fetch(`${this.API_URL}/rooms/${roomId}`, {
           body: null,
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           mode: "cors",
           credentials: "omit"
         });
+
         loadingComponent.close();
-        console.log("deleted succ !");
+        // console.log(res.status);
+
+        // let data = await res.json();
+        if (res.status == 200 || res.status == 201) {
+          console.log("deleted succ !");
+          this.rooms.splice(i, 1);
+          this.$buefy.snackbar.open({
+            message: "Room deleted successfully !",
+            type: "is-warning",
+            position: "is-bottom-left",
+            // actionText: 'Retry',
+            duration: 4000
+          });
+        } else {
+          throw Error;
+        }
       } catch (error) {
+        this.$buefy.toast.open({
+          message: this.ErrorMessage,
+          type: "is-danger"
+        });
         console.log(error);
       }
-      this.rooms.splice(i, 1);
     },
     async redirect(index) {
       this.$router.push("/room/" + index);
+    },
+    mouseOver(action, e) {
+      if (action === "on") {
+        e.currentTarget.firstChild.children[1].style = "visibility:visible;";
+      } else if (action === "off") {
+        e.currentTarget.firstChild.children[1].style = "visibility:hidden;";
+      }
     }
   },
   async created() {
-    var res = await fetch(`${this.API_URL}/rooms`);
-    var data = await res.json();
-    console.table(data);
-    this.rooms = data;
+    try {
+      var res = await fetch(`${this.API_URL}/rooms`);
+      if (res.status == 200 || res.status == 201) {
+        var data = await res.json();
+        console.table(data);
+        this.rooms = data;
+      } else {
+        throw Error;
+      }
+    } catch (error) {
+      this.$buefy.toast.open({
+        message: this.ErrorMessage,
+        type: "is-danger"
+      });
+      console.error(error);
+    }
     // this.rooms.forEach(room => {
 
     // });
