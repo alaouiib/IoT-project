@@ -121,7 +121,7 @@ export default {
   data() {
     return {
       rooms: {},
-      API_URL: "https://alyhdr.cleverapps.io/api",
+      API_URL: "https://idrissi.cleverapps.io/api",
       isActive: true,
       isMessageActive: false,
       roomName: "",

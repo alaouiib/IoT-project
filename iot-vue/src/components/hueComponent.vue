@@ -88,12 +88,12 @@
           </div>
           <footer class="card-footer">
             <a class="card-footer-item" @click="switchLight(light.id, 'ON', i)"
-              >switch light</a
+              >ON</a
             >
             <a class="card-footer-item" @click="adjustBri_Sat">Bri | Sat</a>
-            <!-- <a class="card-footer-item" @click="switchLight(light.id, 'OFF')"
+            <a class="card-footer-item" @click="switchLight(light.id, 'OFF', i)"
               >OFF</a
-            > -->
+            >
           </footer>
         </div>
         <div
@@ -167,7 +167,7 @@ export default {
     return {
       lights: [],
       activeHue: 0,
-      API_URL: "https://alyhdr.cleverapps.io/api",
+      API_URL: "https://idrissi.cleverapps.io/api",
       isMessageActive: false,
       lightId: "",
       status: "",
@@ -183,9 +183,10 @@ export default {
   methods: {
     async switchLight(index, action, DomIndex) {
       console.log(index, action, DomIndex);
-      // TODO: to change
-      try {
-        let res = await fetch(`${this.API_URL}/lights/${index}/switch`, {
+
+      if (action === "ON") {
+          try {
+        let res = await fetch(`${this.API_URL}/lights/${index}/switchOn`, {
           method: "PUT",
           body: JSON.stringify({ id: index }),
           headers: { "Content-Type": "application/json" },
@@ -204,6 +205,29 @@ export default {
           type: "is-danger"
         });
         console.error(error);
+      }
+      } else if (action === "OFF") {
+          try {
+        let res = await fetch(`${this.API_URL}/lights/${index}/switchOff`, {
+          method: "PUT",
+          body: JSON.stringify({ id: index }),
+          headers: { "Content-Type": "application/json" },
+          mode: "cors"
+        });
+        if (res.status == 200 || res.status == 201) {
+          let light = await res.json();
+          this.lights[DomIndex].status = light.status;
+          console.table(light);
+        } else {
+          throw Error;
+        }
+      } catch (error) {
+        this.$buefy.toast.open({
+          message: this.ErrorMessage,
+          type: "is-danger"
+        });
+        console.error(error);
+      }
       }
     },
     async addLight() {
