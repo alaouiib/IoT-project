@@ -117,6 +117,9 @@
 </template>
 
 <script>
+// import cbor from "cbor";
+// import assert from "assert";
+
 export default {
   data() {
     return {
@@ -161,7 +164,7 @@ export default {
           mode: "cors",
           credentials: "omit"
         });
-        loadingComponent.close()
+        loadingComponent.close();
         if (resp.status == 200 || resp.status == 201) {
           let data = await resp.json();
           body.id = data.id;
@@ -254,7 +257,35 @@ export default {
     // this.rooms.forEach(room => {
 
     // });
-  }
+  },
+  // async mounted() {
+  //   var encoded = cbor.encode(JSON.stringify({"id":-1,"status":"ON"}));
+  //   console.log(encoded);
+
+  //   var myHeaders = new Headers();
+  //   myHeaders.append("Content-Type", "application/json");
+
+  //   var payload = encoded;
+ 
+  //   var requestOptions = {
+  //     method: "PUT",
+  //     headers: myHeaders,
+  //     body: payload,
+  //     redirect: "follow"
+  //   };
+
+  //   fetch("http://localhost:8080/api/lights/-1/switch", requestOptions)
+  //     .then(response => response.json())
+  //     .then(result => console.log(result))
+  //     .catch(error => console.log("error", error));
+
+  //   cbor.decodeFirst(encoded, function(error, obj) {
+  //     // error != null if there was an error
+  //     // obj is the unpacked object
+  //    // assert.ok(obj === {"id":-1,"level":8,"status":"ON","roomId":-10});
+  //     console.log(obj);
+  //   });
+  // }
 };
 </script>
 <style scoped>
