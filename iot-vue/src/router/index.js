@@ -23,7 +23,17 @@ const routes = [
   {
     path: "/room/:id", // id is the roomID
     name: "hueComponent",
-    component: hueComponent
+    component: hueComponent,
+    beforeEnter: (to, from, next) => {
+      let isLoggedIn = localStorage.getItem("isLoggedIn");
+      if (isLoggedIn && isLoggedIn == "true") {
+        next();
+      } else {
+        console.log("not logged in !");
+
+        next("/");
+      }
+    }
   }
 ];
 

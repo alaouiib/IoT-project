@@ -26,12 +26,12 @@
           <div class="slidecontainer">
             <input
               type="range"
-              min="1"
+              min="0"
               max="65535"
               value="10000"
               class="slider"
               ref="myRangeColor"
-              @mouseup="changeColor()"
+              @mouseup="changeHue_Bri_Sat()"
             />
             <p style="color:white;">
               Color: <span style="color:red;" ref="demo"></span>
@@ -43,11 +43,17 @@
               value="254"
               class="slider"
               ref="myRangeBri"
-              @mouseup="changeBri()"
+              @mouseup="changeHue_Bri_Sat()"
             />
             <p style="color:white;">
               Brightness: <span style="color:red;" ref="demo2"></span>
             </p>
+            <button
+              @click="changeHue_Bri_Sat_request"
+              class="button  is-primary is-light is-rounded is-outlined  is-fullwidth "
+            >
+              Show
+            </button>
           </div>
         </b-modal>
         <div
@@ -90,7 +96,7 @@
             <a class="card-footer-item" @click="switchLight(light.id, 'ON', i)"
               >ON</a
             >
-            <a class="card-footer-item" @click="adjustBri_Sat">Bri | Sat</a>
+            <a class="card-footer-item" @click="adjustBri_Sat(i)">Bri | Sat</a>
             <a class="card-footer-item" @click="switchLight(light.id, 'OFF', i)"
               >OFF</a
             >
@@ -140,15 +146,15 @@
             <b-field label="color" label-position="on-border">
               <b-input
                 type="number"
-                placeholder="color (0-10000)"
+                placeholder="color (0-65535)"
                 v-model="color"
               ></b-input>
             </b-field>
-            <b-field label="level" label-position="on-border">
+            <b-field label="brightness" label-position="on-border">
               <b-input
                 type="number"
-                placeholder="level"
-                v-model="level"
+                placeholder="brightness"
+                v-model="brightness"
               ></b-input>
             </b-field>
             <b-field>
@@ -171,13 +177,14 @@ export default {
       isMessageActive: false,
       lightId: "",
       status: "",
-      level: "",
+      brightness: "",
       color: "",
       roomId: "",
       isEmptyMessageActive: false,
       isAddBoxHidden: false,
       ErrorMessage: "Please refresh the page, Something happened uncorrectly! ",
-      isCardModalActive: false
+      isCardModalActive: false,
+      selectedHueIndex: null
     };
   },
   methods: {
@@ -185,49 +192,49 @@ export default {
       console.log(index, action, DomIndex);
 
       if (action === "ON") {
-          try {
-        let res = await fetch(`${this.API_URL}/lights/${index}/switchOn`, {
-          method: "PUT",
-          body: JSON.stringify({ id: index }),
-          headers: { "Content-Type": "application/json" },
-          mode: "cors"
-        });
-        if (res.status == 200 || res.status == 201) {
-          let light = await res.json();
-          this.lights[DomIndex].status = light.status;
-          console.table(light);
-        } else {
-          throw Error;
+        try {
+          let res = await fetch(`${this.API_URL}/lights/${index}/switchOn`, {
+            method: "PUT",
+            body: JSON.stringify({ id: index }),
+            headers: { "Content-Type": "application/json" },
+            mode: "cors"
+          });
+          if (res.status == 200 || res.status == 201) {
+            let light = await res.json();
+            this.lights[DomIndex].status = light.status;
+            console.table(light);
+          } else {
+            throw Error;
+          }
+        } catch (error) {
+          this.$buefy.toast.open({
+            message: this.ErrorMessage,
+            type: "is-danger"
+          });
+          console.error(error);
         }
-      } catch (error) {
-        this.$buefy.toast.open({
-          message: this.ErrorMessage,
-          type: "is-danger"
-        });
-        console.error(error);
-      }
       } else if (action === "OFF") {
-          try {
-        let res = await fetch(`${this.API_URL}/lights/${index}/switchOff`, {
-          method: "PUT",
-          body: JSON.stringify({ id: index }),
-          headers: { "Content-Type": "application/json" },
-          mode: "cors"
-        });
-        if (res.status == 200 || res.status == 201) {
-          let light = await res.json();
-          this.lights[DomIndex].status = light.status;
-          console.table(light);
-        } else {
-          throw Error;
+        try {
+          let res = await fetch(`${this.API_URL}/lights/${index}/switchOff`, {
+            method: "PUT",
+            body: JSON.stringify({ id: index }),
+            headers: { "Content-Type": "application/json" },
+            mode: "cors"
+          });
+          if (res.status == 200 || res.status == 201) {
+            let light = await res.json();
+            this.lights[DomIndex].status = light.status;
+            console.table(light);
+          } else {
+            throw Error;
+          }
+        } catch (error) {
+          this.$buefy.toast.open({
+            message: this.ErrorMessage,
+            type: "is-danger"
+          });
+          console.error(error);
         }
-      } catch (error) {
-        this.$buefy.toast.open({
-          message: this.ErrorMessage,
-          type: "is-danger"
-        });
-        console.error(error);
-      }
       }
     },
     async addLight() {
@@ -241,9 +248,9 @@ export default {
         let res = await fetch(`${this.API_URL}/lights/`, {
           method: "POST",
           body: JSON.stringify({
-            color: this.color,
+            hue: this.color,
             id: this.lightId,
-            level: this.level,
+            brightness: this.brightness,
             roomId: this.roomId,
             status: this.status
           }),
@@ -310,16 +317,69 @@ export default {
         console.log(error);
       }
     },
-    async adjustBri_Sat() {
+    async adjustBri_Sat(index) {
       this.isCardModalActive = true;
+      this.selectedHueIndex = index;
+      setTimeout(() => {
+        this.$refs.demo.textContent = this.$refs.myRangeColor.value = this.lights[
+          index
+        ].hue;
+        this.$refs.demo2.textContent = this.$refs.myRangeBri.value = this.lights[
+          index
+        ].brightness;
+      }, 100);
+
+      //   {
+      // "brightness": 999,
+      // "hue": 999,
+      // "id":-2
+      //  }
     },
-    changeColor() {
+    async changeHue_Bri_Sat() {
       let color = this.$refs.myRangeColor.value;
       this.$refs.demo.textContent = color;
-    },
-    changeBri() {
       let bri = this.$refs.myRangeBri.value;
       this.$refs.demo2.textContent = bri;
+    },
+    async changeHue_Bri_Sat_request() {
+      try {
+        const loadingComponent = this.$buefy.loading.open({
+          container: this.$refs.element.$el
+        });
+        let res = await fetch(`${this.API_URL}/lights`, {
+          method: "POST",
+          body: JSON.stringify({
+            id: this.lights[this.selectedHueIndex].id,
+            hue: Number.parseInt(this.$refs.myRangeColor.value),
+            brightness: Number.parseInt(this.$refs.myRangeBri.value)
+          }),
+          headers: { "Content-Type": "application/json" },
+          mode: "cors"
+        });
+        loadingComponent.close();
+        if (res.status == 200 || res.status == 201) {
+          let addedLight = await res.json();
+
+          // console.log(data);
+          this.lights[this.selectedHueIndex] = addedLight;
+          // this.AddBoxHidden = true;
+          this.$buefy.snackbar.open({
+            message: "Light added successfully !",
+            type: "is-success",
+            position: "is-bottom-left",
+            // actionText: 'Retry',
+            duration: 4000
+          });
+        } else {
+          throw Error;
+        }
+      } catch (error) {
+        this.$buefy.toast.open({
+          message: this.ErrorMessage,
+          type: "is-danger"
+        });
+        console.error(error);
+      }
     },
     // handle mouse over cards ( to hide the remove icon )
     mouseOver(action, e) {
@@ -437,8 +497,9 @@ marquee {
   appearance: none;
   width: 25px;
   height: 25px;
-  background: #4caf50;
+  background: #d64810fd;
   cursor: pointer;
+  border-radius: 10px;
 }
 
 .slider::-moz-range-thumb {
