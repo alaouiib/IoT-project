@@ -158,7 +158,8 @@ export default {
       activateLogin: false,
       videoReady: false,
       user: "",
-      isLoggedMessage: false
+      isLoggedMessage: false,
+      model: null
     };
   },
   methods: {
@@ -264,8 +265,8 @@ export default {
         e.currentTarget.firstChild.children[1].style = "visibility:hidden;";
       }
     },
-    classify(classifier) {
-      classifier.classify(document.getElementById("video"), (err, results) => {
+    guess(classifier) {
+      classifier.guess(document.getElementById("video"), (err, results) => {
         if (err) console.log(err);
         if (results[0].confidence > 0.9) {
           this.user = results[0].label;
@@ -276,9 +277,17 @@ export default {
           }
           console.log("result: ", this.user);
         }
-        this.classify(classifier);
+        this.guess(classifier);
       });
     }
+    // videoReady() {
+    //   this.classifier.load("./model.json", () => {
+    //     console.log("loaded !");
+    //     // this.classifier.classify((err, res) => {
+    //     //   console.log(res);
+    //     // });
+    //   });
+    // }
   },
   async created() {
     try {
@@ -308,7 +317,7 @@ export default {
     let isLoggedIn = localStorage.getItem("isLoggedIn");
     if (isLoggedIn && isLoggedIn == "true") {
       console.log("logged in", isLoggedIn);
-      this.isLoggedMessage = true;
+      // this.isLoggedMessage = true;
     } else {
       console.log("not logged in or no local key found", isLoggedIn);
       // this.$buefy.snackbar.open({
@@ -339,23 +348,49 @@ export default {
             video.play();
           })
           .then(() => {
-            const URL =
-              "https://teachablemachine.withgoogle.com/models/of9bynZQ/model.json";
-            const classifier = ml5.imageClassifier(URL, video, () => {
-              console.log("model loaded !");
-            });
-            // console.log(classifier);
-            if (this.activateLogin) {
-              this.classify(classifier);
-            } else {
-              console.log("Logged in !");
+            let isThereModel = localStorage.getItem("isThereModel");
+            if (isThereModel && isThereModel == "false") {
+              const URL =
+                "https://teachablemachine.withgoogle.com/models/of9bynZQ/model.json";
+              const classifier = ml5.imageClassifier(URL, video, () => {
+                console.log("model loaded !");
+                this.model = classifier;
+              });
+            } else if (isThereModel && isThereModel == "true") {
+              console.log("it iss true");
+
+              const featureExtractor = ml5.featureExtractor(
+                "MobileNet",
+                {
+                  epochs: 50
+                },
+                this.modelLoaded
+              );
+              // Create a new classifier using those features
+              const classifier = featureExtractor.classification(video, () => {
+                console.log("classier here");
+              });
+
+              setTimeout(() => {
+                classifier.load("../assets/model.json", () => {
+                  console.log("loaded !");
+                });
+              }, 4000);
             }
+
+            // // console.log(classifier);
+            // if (this.activateLogin) {
+            //   this.guess(this.model);
+            // } else {
+            //   console.log("Logged in !");
+            // }
           });
       } else {
         console.log("video not ready !");
       }
     }, 2000);
   }
+
   // async mounted() {
   //   var encoded = cbor.encode(JSON.stringify({"id":-1,"status":"ON"}));
   //   console.log(encoded);
@@ -419,9 +454,8 @@ figure.image img {
   display: none;
 }
 
-
 video {
-  margin-left:100px;
+  margin-left: 100px;
   border: dashed 4px #f4f4f4;
 }
 </style>
