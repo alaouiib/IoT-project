@@ -13,11 +13,9 @@
 
       <div class="backButton">
         <router-link to="/">
-          <b-field>
             <b-button icon-left="fas fa-arrow-left">
               Back
             </b-button>
-          </b-field>
         </router-link>
       </div>
 

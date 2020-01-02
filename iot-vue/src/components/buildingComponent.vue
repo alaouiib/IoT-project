@@ -3,8 +3,8 @@
     <b-modal
       class="videoModal"
       :active.sync="activateLogin"
-      :width="640"
       scroll="keep"
+      :width="640"
       :can-cancel="false"
     >
       <b-message
@@ -23,7 +23,7 @@
     <section class="section">
       <b-message
         auto-close
-        title="You are not a thief !"
+        title="You are a logged in !"
         type="is-success"
         has-icon
         :active.sync="isLoggedMessage"
@@ -137,6 +137,7 @@
       </div>
     </section>
   </div>
+  
 </template>
 
 <script>
@@ -266,7 +267,7 @@ export default {
       }
     },
     guess(classifier) {
-      classifier.guess(document.getElementById("video"), (err, results) => {
+      classifier.classify(document.getElementById("video"), (err, results) => {
         if (err) console.log(err);
         if (results[0].confidence > 0.9) {
           this.user = results[0].label;
@@ -348,42 +349,47 @@ export default {
             video.play();
           })
           .then(() => {
-            let isThereModel = localStorage.getItem("isThereModel");
-            if (isThereModel && isThereModel == "false") {
-              const URL =
-                "https://teachablemachine.withgoogle.com/models/of9bynZQ/model.json";
-              const classifier = ml5.imageClassifier(URL, video, () => {
-                console.log("model loaded !");
-                this.model = classifier;
-              });
-            } else if (isThereModel && isThereModel == "true") {
-              console.log("it iss true");
+            // let isThereModel = localStorage.getItem("isThereModel");
+            // if (isThereModel && isThereModel == "false") {
+            //   const URL =
+            //     "https://teachablemachine.withgoogle.com/models/of9bynZQ/model.json";
+            //   const classifier = ml5.imageClassifier(URL, video, () => {
+            //     console.log("model loaded !");
+            //     this.model = classifier;
+            //   });
+            // } else if (isThereModel && isThereModel == "true") {
+            //   console.log("it iss true");
 
-              const featureExtractor = ml5.featureExtractor(
-                "MobileNet",
-                {
-                  epochs: 50
-                },
-                this.modelLoaded
-              );
-              // Create a new classifier using those features
-              const classifier = featureExtractor.classification(video, () => {
-                console.log("classier here");
-              });
+            //   const featureExtractor = ml5.featureExtractor(
+            //     "MobileNet",
+            //     {
+            //       epochs: 50
+            //     },
+            //     this.modelLoaded
+            //   );
+            //   // Create a new classifier using those features
+            //   const classifier = featureExtractor.classification(video, () => {
+            //     console.log("classier here");
+            //   });
 
-              setTimeout(() => {
-                classifier.load("../assets/model.json", () => {
-                  console.log("loaded !");
-                });
-              }, 4000);
-            }
-
-            // // console.log(classifier);
-            // if (this.activateLogin) {
-            //   this.guess(this.model);
-            // } else {
-            //   console.log("Logged in !");
+            //   setTimeout(() => {
+            //     classifier.load("../assets/model.json", () => {
+            //       console.log("loaded !");
+            //     });
+            //   }, 4000);
             // }
+            const URL =
+              "https://teachablemachine.withgoogle.com/models/of9bynZQ/model.json";
+            const classifier = ml5.imageClassifier(URL, video, () => {
+              console.log("model loaded !");
+              this.model = classifier;
+            });
+            // console.log(classifier);
+            if (this.activateLogin) {
+              this.guess(classifier);
+            } else {
+              console.log("Logged in !");
+            }
           });
       } else {
         console.log("video not ready !");
@@ -456,6 +462,6 @@ figure.image img {
 
 video {
   margin-left: 100px;
-  border: dashed 4px #f4f4f4;
+  border: dashed 2px #f4f4f4;
 }
 </style>

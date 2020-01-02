@@ -1,9 +1,10 @@
 <template>
-  <div id="app">
+  <div id="appp">
     <section class="section">
       <div class="container">
         <h1 class="title ">
           Transfer Learning - Image Classifier
+          <span> (UNDER DEVELOPMENT !)</span>
         </h1>
         <h2 class="subtitle predictedLabel">
           predicted label: <b style="color: red">"{{ predictedLabel }}"</b>
@@ -12,16 +13,19 @@
         <div class="columns">
           <div class="container">
             <div class="has-text-centered">
-              <div class="column ">
-                Train:
+              <div class="column">
+                <button class="button  is-outlined" @click="addElement">
+                  add
+                </button>
+              </div>
+               Train:
+              <div v-for="(element, i) in classes" class="column" :key="i">
+               
                 <button
                   class="button  is-outlined"
-                  @mousedown="addImage('othmane')"
+                  @mousedown="addImage(element)"
                 >
-                  othmane
-                </button>
-                <button class="button  is-outlined" @mousedown="addImage('abdel')">
-                  abdel
+                  {{ element }}
                 </button>
               </div>
 
@@ -59,7 +63,8 @@ export default {
       modelLoadedMsg: "",
       videoReadyMsg: "",
       classifier: null,
-      predictedLabel: " "
+      predictedLabel: " ",
+      classes: []
     };
   },
   methods: {
@@ -75,13 +80,13 @@ export default {
     },
     videoReady() {
       this.videoReadyMsg = "video ready";
-        
-        this.classifier.load("./model.json", () => {
-          console.log("loaded !");
-        //   this.classifier.classify((err, res) => {
-        //     console.log(res);
-        //   });
-        });
+
+      // this.classifier.load("./model.json", () => {
+      //   console.log("loaded !");
+      //   //   this.classifier.classify((err, res) => {
+      //   //     console.log(res);
+      //   //   });
+      // });
     },
     predict() {
       this.classifier.predict(this.gotResults);
@@ -101,8 +106,8 @@ export default {
         if (lossValue) {
           console.log("loss value:", lossValue);
         } else {
-           alert('c est bon !')
-          console.log('Train finished !');
+          alert("c est bon !");
+          console.log("Train finished !");
         }
       });
     },
@@ -112,9 +117,17 @@ export default {
     exportModel() {
       this.classifier.save();
     },
-  
-   
-    
+    addElement() {
+      this.$buefy.dialog.prompt({
+        message: `Enter the new user's name !`,
+        inputAttrs: {
+          placeholder: "e.g. Saymon",
+          maxlength: 10
+        },
+        trapFocus: true,
+        onConfirm: value => this.classes.push(value)
+      });
+    }
   },
   created() {},
   mounted() {
@@ -131,18 +144,14 @@ export default {
         this.modelLoaded
       );
       // Create a new classifier using those features
-      this.classifier = featureExtractor.classification(
-        video,
-        this.videoReady
-      );
-    //   this.classifier = classifier;
-      
+      this.classifier = featureExtractor.classification(video, this.videoReady);
+      //   this.classifier = classifier;
     });
   }
 };
 </script>
 
-<style>
+<style scoped>
 div video {
   width: 640px;
   height: 480px;

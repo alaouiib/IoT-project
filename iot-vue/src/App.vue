@@ -27,7 +27,6 @@
         </div>
       </div>
     </nav>
-
     <router-view></router-view>
   </div>
 </template>
@@ -38,8 +37,7 @@ export default {
       localStorage.clear();
       location.reload();
     }
-  },
- 
+  }
 };
 </script>
 <style></style>
