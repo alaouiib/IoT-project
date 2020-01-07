@@ -378,8 +378,8 @@ export default {
             //     });
             //   }, 4000);
             // }
-            const URL =
-              "https://teachablemachine.withgoogle.com/models/of9bynZQ/model.json";
+            const URL = 'https://teachablemachine.withgoogle.com/models/XLqbjQq-/model.json'
+           //   "https://teachablemachine.withgoogle.com/models/of9bynZQ/model.json";
             const classifier = ml5.imageClassifier(URL, video, () => {
               console.log("model loaded !");
               this.model = classifier;

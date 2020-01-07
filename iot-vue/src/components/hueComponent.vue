@@ -1,5 +1,6 @@
 <template>
-  <div class="hueComponent">
+  <div  class="hueComponent">
+
     <section class="section">
       <b-message
         type="is-info"
@@ -13,16 +14,16 @@
 
       <div class="backButton">
         <router-link to="/">
-            <b-button icon-left="fas fa-arrow-left">
-              Back
-            </b-button>
+          <b-button icon-left="fas fa-arrow-left">
+            Back
+          </b-button>
         </router-link>
       </div>
 
       <div class="container" ref="element">
         <b-modal :active.sync="isCardModalActive" :width="640" scroll="keep">
           <div class="slidecontainer">
-            <input
+            <!-- <input
               type="range"
               min="0"
               max="65535"
@@ -33,7 +34,9 @@
             />
             <p style="color:white;">
               Color: <span style="color:red;" ref="demo"></span>
-            </p>
+            </p> -->
+                <color-picker class='colorPicker' v-model="colorHue" @input="onInput"></color-picker>
+
             <input
               type="range"
               min="1"
@@ -166,7 +169,11 @@
 </template>
 
 <script>
+import ColorPicker from "@radial-color-picker/vue-color-picker";
+import hsl from "@c350156378/hsl-to-hex";
 export default {
+  components: { ColorPicker },
+
   data() {
     return {
       lights: [],
@@ -182,10 +189,26 @@ export default {
       isAddBoxHidden: false,
       ErrorMessage: "Please refresh the page, Something happened uncorrectly! ",
       isCardModalActive: false,
-      selectedHueIndex: null
+      selectedHueIndex: null,
+      colorHue: {
+        hue: 50,
+        saturation: 100,
+        luminosity: 50,
+        alpha: 1
+      },
+      hexColor:"#ffffff"
     };
   },
   methods: {
+    onInput(hue) {
+     console.log(hue);
+           this.color = hue * 182;
+
+     //if (hue > 0) {
+       //this.colorHue.hue = hue;
+       //console.log(this.colorHue.hue);
+     //}
+    },
     async switchLight(index, action, DomIndex) {
       console.log(index, action, DomIndex);
 
@@ -319,9 +342,9 @@ export default {
       this.isCardModalActive = true;
       this.selectedHueIndex = index;
       setTimeout(() => {
-        this.$refs.demo.textContent = this.$refs.myRangeColor.value = this.lights[
-          index
-        ].hue;
+       // this.$refs.demo.textContent = this.$refs.myRangeColor.value = this.lights[
+       //   index
+      //  ].hue;
         this.$refs.demo2.textContent = this.$refs.myRangeBri.value = this.lights[
           index
         ].brightness;
@@ -334,8 +357,8 @@ export default {
       //  }
     },
     async changeHue_Bri_Sat() {
-      let color = this.$refs.myRangeColor.value;
-      this.$refs.demo.textContent = color;
+  //    let color = this.$refs.myRangeColor.value;
+     // this.$refs.demo.textContent = color;
       let bri = this.$refs.myRangeBri.value;
       this.$refs.demo2.textContent = bri;
     },
@@ -348,7 +371,8 @@ export default {
           method: "POST",
           body: JSON.stringify({
             id: this.lights[this.selectedHueIndex].id,
-            hue: Number.parseInt(this.$refs.myRangeColor.value),
+            hue:this.color,
+          //  hue: Number.parseInt(this.$refs.myRangeColor.value),
             brightness: Number.parseInt(this.$refs.myRangeBri.value)
           }),
           headers: { "Content-Type": "application/json" },
@@ -424,12 +448,22 @@ export default {
       console.log(error);
     }
   },
-  mounted() {}
+  mounted() {
+      var hue = 300;
+      var saturation = 100
+      var luminosity = 100
+      var hex = hsl(hue, saturation, luminosity)
+      this.hexColor = hex;
+      console.log(hex) // #70c282
+
+  }
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+@import "~@radial-color-picker/vue-color-picker/dist/vue-color-picker.min.css";
+
 .container {
   display: flex;
   flex-wrap: wrap;
@@ -505,5 +539,15 @@ marquee {
   height: 25px;
   background: #4caf50;
   cursor: pointer;
+}
+.colorPicker{
+  height: 220px;
+  width: 220px;
+  margin: 0 auto;
+  margin-top: 10px;
+  margin-bottom: 10px
+}
+.card{
+  background: "";
 }
 </style>
