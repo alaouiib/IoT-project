@@ -137,12 +137,13 @@
       </div>
     </section>
   </div>
-  
 </template>
 
 <script>
 // import cbor from "cbor";
 // import assert from "assert";
+
+// tensorflow.js layer library in order for the log in
 import ml5 from "ml5";
 export default {
   data() {
@@ -164,26 +165,20 @@ export default {
     };
   },
   methods: {
+    // function to add a new room to the building
     async addRoom() {
       console.log(this.roomName, this.roomId);
       this.isMessageActive = false;
       this.isAddBoxHidden = false;
       let body = {
         floor: this.floor,
-        lights: [
-          // {
-          //   color: 23123,
-          //   id: 1,
-          //   level: 3,
-          //   roomId: 1,
-          //   status: "ON"
-          // }
-        ],
+        lights: [],
         name: this.roomName,
         buildingId: 1
       };
 
       try {
+        // start loading component
         const loadingComponent = this.$buefy.loading.open({
           container: this.$refs.element.$el
         });
@@ -220,9 +215,11 @@ export default {
     },
     async removeRoom(roomId, i) {
       try {
+        // start loading component
         const loadingComponent = this.$buefy.loading.open({
           container: this.$refs.element.$el
         });
+        // remove a room with id = roomId
         let res = await fetch(`${this.API_URL}/rooms/${roomId}`, {
           body: null,
           method: "DELETE",
@@ -230,11 +227,9 @@ export default {
           mode: "cors",
           credentials: "omit"
         });
-
+        // close loading component after getting back the result from the sereer
         loadingComponent.close();
-        // console.log(res.status);
-
-        // let data = await res.json();
+    
         if (res.status == 200 || res.status == 201) {
           console.log("deleted succ !");
           this.rooms.splice(i, 1);
@@ -249,6 +244,7 @@ export default {
           throw Error;
         }
       } catch (error) {
+        // in case of error: display a Toast
         this.$buefy.toast.open({
           message: this.ErrorMessage,
           type: "is-danger"
@@ -256,9 +252,11 @@ export default {
         console.log(error);
       }
     },
+    // redirect (without reloading the page [specific case])
     async redirect(index) {
       this.$router.push("/room/" + index);
     },
+    // mouse over the cards (in order to display the close button)
     mouseOver(action, e) {
       if (action === "on") {
         e.currentTarget.firstChild.children[1].style = "visibility:visible;";
@@ -266,6 +264,7 @@ export default {
         e.currentTarget.firstChild.children[1].style = "visibility:hidden;";
       }
     },
+    // make a user guess (if it is "Abdelhamid" -> log in)
     guess(classifier) {
       classifier.classify(document.getElementById("video"), (err, results) => {
         if (err) console.log(err);
@@ -281,21 +280,15 @@ export default {
         this.guess(classifier);
       });
     }
-    // videoReady() {
-    //   this.classifier.load("./model.json", () => {
-    //     console.log("loaded !");
-    //     // this.classifier.classify((err, res) => {
-    //     //   console.log(res);
-    //     // });
-    //   });
-    // }
+   
   },
+  // fetch rooms on page creation ! ( before the page mounting )
   async created() {
     try {
+      // send request to get rooms
       var res = await fetch(`${this.API_URL}/rooms`);
       if (res.status == 200 || res.status == 201) {
         var data = await res.json();
-        // console.table(data);
         this.rooms = data;
       } else {
         throw Error;
@@ -307,26 +300,15 @@ export default {
       });
       console.error(error);
     }
-
-    // this.rooms.forEach(room => {
-
-    // });
   },
-  mounted() {
+  // code for user authentication 
+  async mounted() {
     console.log("mounted");
-
     let isLoggedIn = localStorage.getItem("isLoggedIn");
     if (isLoggedIn && isLoggedIn == "true") {
       console.log("logged in", isLoggedIn);
-      // this.isLoggedMessage = true;
     } else {
       console.log("not logged in or no local key found", isLoggedIn);
-      // this.$buefy.snackbar.open({
-      //   message: "You should Log in before accessing to this page !",
-      //   type: "is-danger",
-      //   position: "is-bottom",
-      //   duration: 10000
-      // });
       setTimeout(() => {
         this.activateLogin = true;
       }, 100);
@@ -344,42 +326,13 @@ export default {
         navigator.mediaDevices
           .getUserMedia({ video: true })
           .then(stream => {
-            // let video = this.$refs.videoRef;
             video.srcObject = stream;
             video.play();
           })
           .then(() => {
-            // let isThereModel = localStorage.getItem("isThereModel");
-            // if (isThereModel && isThereModel == "false") {
-            //   const URL =
-            //     "https://teachablemachine.withgoogle.com/models/of9bynZQ/model.json";
-            //   const classifier = ml5.imageClassifier(URL, video, () => {
-            //     console.log("model loaded !");
-            //     this.model = classifier;
-            //   });
-            // } else if (isThereModel && isThereModel == "true") {
-            //   console.log("it iss true");
-
-            //   const featureExtractor = ml5.featureExtractor(
-            //     "MobileNet",
-            //     {
-            //       epochs: 50
-            //     },
-            //     this.modelLoaded
-            //   );
-            //   // Create a new classifier using those features
-            //   const classifier = featureExtractor.classification(video, () => {
-            //     console.log("classier here");
-            //   });
-
-            //   setTimeout(() => {
-            //     classifier.load("../assets/model.json", () => {
-            //       console.log("loaded !");
-            //     });
-            //   }, 4000);
-            // }
-            const URL = 'https://teachablemachine.withgoogle.com/models/XLqbjQq-/model.json'
-           //   "https://teachablemachine.withgoogle.com/models/of9bynZQ/model.json";
+            const URL =
+              "https://teachablemachine.withgoogle.com/models/XLqbjQq-/model.json";
+            //   "https://teachablemachine.withgoogle.com/models/of9bynZQ/model.json";
             const classifier = ml5.imageClassifier(URL, video, () => {
               console.log("model loaded !");
               this.model = classifier;

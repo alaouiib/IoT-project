@@ -19,7 +19,7 @@ client.on("connect", function() {
   client.subscribe("idrissi/switchOff");
   client.subscribe("idrissi/switchOn");
   client.subscribe("idrissi/update");
-  client.subscribe("/toggle");
+  // client.subscribe("/toggle");
 
   //  setInterval(function(){
   // client.publish('/light/2', 'car coming from Javascr Arduino !');
