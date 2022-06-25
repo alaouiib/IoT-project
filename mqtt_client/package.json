@@ -11,7 +11,7 @@
   "dependencies": {
     "@c350156378/hsl-to-hex": "^1.0.3",
     "mqtt": "^3.0.0",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "nodemon": "^2.0.2"
   }
 }
